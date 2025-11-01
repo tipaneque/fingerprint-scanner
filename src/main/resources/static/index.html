@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner de Impressão Digital</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="container">
+    <div id="titulo-logo">
+        <img src="https://bluestringco.co/_next/static/media/logo.adef7454.svg" id="logo">
+    </div>
+
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Desconectado</span>
+        </div>
+        <div class="settings-panel">
+            <label for="fingerType">Tipo de Dedo:</label>
+            <select id="fingerType">
+                <option value="normal">Normal</option>
+                <option value="dry">Seco</option>
+                <option value="wet">Úmido</option>
+            </select>
+
+            <label>
+                <input type="checkbox" id="livenessCheck"> Verificar Autenticidade (LFD)
+            </label>
+        </div>
+        <div>
+            <span id="handDisplay" style="margin-right: 20px; font-weight: 600;">Mão: --</span>
+            <span id="qualityDisplay">Qualidade: --</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-primary" id="btnOpen">Conectar Dispositivo</button>
+        <button class="btn-primary" id="btnCaptureSingle" disabled>Capturar Único</button>
+        <button class="btn-primary" id="btnCaptureMultipleEsq" disabled>4 Esquerda</button>
+        <button class="btn-primary" id="btnCaptureMultipleDir" disabled>4 Direita</button>
+        <button class="btn-primary" id="btnCaptureThumbs" disabled>Capturar 2 Polegares</button>
+        <button class="btn-success" id="btnCreateTemplate" disabled>Gerar Template</button>
+        <button class="btn-secondary" id="btnSaveCapture" disabled>💾 Salvar Captura</button>
+    </div>
+
+    <div class="preview-section">
+        <div class="preview-container">
+            <div>
+                <h3>Preview Principal</h3>
+                <div class="preview-image empty" id="mainPreview" style="width: 450px;"></div>
+            </div>
+            <div>
+                <h3>Última Captura</h3>
+                <div class="preview-image empty" id="lastCapture"></div>
+            </div>
+        </div>
+
+        <div class="preview-container">
+            <div class="dedos">
+                <h3>Dedos Capturados</h3>
+                <div class="captured-data">
+
+                    <div class="fingers-grid">
+                        <div class="finger-slot">
+                            <div class="finger-label">Mínimo E</div>
+                            <div class="finger-image" id="finger-e0"></div>
+                            <div class="quality-badge" id="quality-e0">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Anelar E</div>
+                            <div class="finger-image" id="finger-e1"></div>
+                            <div class="quality-badge" id="quality-e1">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Médio E</div>
+                            <div class="finger-image" id="finger-e2"></div>
+                            <div class="quality-badge" id="quality-e2">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Indicador E</div>
+                            <div class="finger-image" id="finger-e3"></div>
+                            <div class="quality-badge" id="quality-e3">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Polegar E</div>
+                            <div class="finger-image" id="finger-e4"></div>
+                            <div class="quality-badge" id="quality-e4">-</div>
+                        </div>
+                    </div>
+
+                    <div class="fingers-grid">
+                        <div class="finger-slot">
+                            <div class="finger-label">Mínimo D</div>
+                            <div class="finger-image" id="finger-d0"></div>
+                            <div class="quality-badge" id="quality-d0">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Anelar D</div>
+                            <div class="finger-image" id="finger-d1"></div>
+                            <div class="quality-badge" id="quality-d1">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Médio D</div>
+                            <div class="finger-image" id="finger-d2"></div>
+                            <div class="quality-badge" id="quality-d2">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Indicador D</div>
+                            <div class="finger-image" id="finger-d3"></div>
+                            <div class="quality-badge" id="quality-d3">-</div>
+                        </div>
+                        <div class="finger-slot">
+                            <div class="finger-label">Polegar D</div>
+                            <div class="finger-image" id="finger-d4"></div>
+                            <div class="quality-badge" id="quality-d4">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="messageArea"></div>
+</div>
+<script src="main.js"></script>
+</body>
+</html>

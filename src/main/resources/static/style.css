@@ -1,0 +1,344 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #3056D3;
+}
+
+/* Layout principal tipo dashboard */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Container central */
+.container {
+    width: 99%;
+    height: 99vh;
+    background: white;
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+    display: flex;
+    flex-direction: column;
+}
+
+#titulo-logo{
+    display: flex;
+    align-items: center;
+    margin: 0;
+    margin-bottom: 8px;
+    padding: 0;
+}
+
+#logo{
+    margin: 0;
+    padding: 0;
+    transform: scale(1.0);
+}
+
+/* Cabeçalho / título */
+h1 {
+    text-align: center;
+    color: #333;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+/* Barra de status */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #dc3545;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.connected {
+    background: #28a745;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Painéis internos ocupando espaço proporcional */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Controles (botões) */
+.controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+button {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    width: 100%;
+    height: 50px;
+    background: #3056d3;
+    color: white;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: #3056D3;
+    color: white;
+}
+
+/* Preview principal e última captura */
+.preview-section {
+    flex: 2;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+@media (min-width: 900px) {
+    .preview-section {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.dedos{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.preview-container {
+    display: flex;
+    justify-content: space-evenly;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 8px;
+    background: #fafafa;
+    display: flex;
+    height: 80%;
+}
+
+.preview-container h3 {
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+.preview-image {
+    width: 350px;
+    height: 400px;
+    flex: 1;
+    background: #fff;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.preview-image img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.preview-image.empty::before {
+    content: 'Aguardando captura...';
+    color: #999;
+    font-size: 12px;
+}
+
+/* Dedos capturados */
+.fingers-grid {
+    display: flex;
+    justify-content: space-between; /* espaço uniforme entre os slots */
+    gap: 8px;                        /* espaço entre slots */
+    flex-wrap: nowrap;               /* nunca quebra em outra linha */
+    overflow-x: auto;  
+    margin-bottom: 11px;   
+    
+ /* se for menor que 5 slots, permite scroll horizontal */
+}
+
+.finger-slot {
+    flex: 1 1 100px;    /* cresce proporcionalmente, mínimo 100px */
+    max-width: 120px;   /* opcional para não ficar muito largo */
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 4px;
+    text-align: center;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.finger-slot.success {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.finger-slot.fake {
+    border-color: #dc3545;
+    background: #f8d7da;
+}
+
+.finger-image {
+    width: 100%;
+    height: 150px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.finger-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.finger-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.quality-badge {
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 600;
+    background: #3056d3;
+    color: #000;
+}
+
+.quality-badge.good {
+    background: #28a745;
+    color: white;
+}
+
+.quality-badge.bad {
+    background: #dc3545;
+    color: white;
+}
+
+/* Painéis info e configurações */
+.info-panel {
+    background: #e7f3ff;
+    border-left: 3px solid #2196F3;
+    padding: 6px;
+    border-radius: 5px;
+    font-size: 11px;
+}
+
+.settings-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    font-size: 11px;
+}
+
+.settings-panel label {
+    font-weight: 600;
+}
+
+select {
+    padding: 4px;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+/* Mensagens */
+.message {
+    padding: 6px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
