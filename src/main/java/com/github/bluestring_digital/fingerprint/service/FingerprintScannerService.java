@@ -26,8 +26,7 @@ public class FingerprintScannerService {
     private final AtomicBoolean isDeviceOpen = new AtomicBoolean(false);
     private final AtomicBoolean isCapturing = new AtomicBoolean(false);
 
-    // Dimensões padrão
-    // Dimensões padrão — agora fixas e seguras
+    // Standard dimensions
     private static final int DEFAULT_WIDTH = 1600;
     private static final int DEFAULT_HEIGHT = 1500;
     private static final int SINGLE_WIDTH = 300;
@@ -40,16 +39,16 @@ public class FingerprintScannerService {
 
         try {
             int quality = mosaic.MOSAIC_FingerQuality(imageData, width, height);
-            log.info("Qualidade detectada com resolução {}x{} = {}", width, height, quality);
+            log.info("Quality detected with resolution {}x{} = {}", width, height, quality);
             return quality;
         } catch (Error e) {
-            log.warn("Falha ao avaliar qualidade em {}x{} -> {}", width, height, e.getMessage());
+            log.warn("Failure to assess quality in {}x{} -> {}", width, height, e.getMessage());
             return -1;
         }
     }
     
     /**
-     * Abre a conexão com o dispositivo
+     * Opens the connection to the device.
      */
     public boolean openDevice() {
         try {
@@ -57,19 +56,19 @@ public class FingerprintScannerService {
             if (result == 1) {
                 mosaic.MOSAIC_Init();
                 isDeviceOpen.set(true);
-                log.info("Dispositivo aberto com sucesso");
+                log.info("Device opened successfully");
                 return true;
             }
-            log.error("Falha ao abrir dispositivo: código {}", result);
+            log.error("Failed to open device: code {}", result);
             return false;
         } catch (Exception e) {
-            log.error("Erro ao abrir dispositivo", e);
+            log.error("Error opening device", e);
             return false;
         }
     }
 
     /**
-     * Fecha a conexão com o dispositivo
+     * Close the connection with the device.
      */
     public boolean closeDevice() {
         try {
@@ -82,18 +81,18 @@ public class FingerprintScannerService {
                     fpStdLib.ZAZ_FpStdLib_CloseDevice(fpDevice);
                     fpDevice = 0;
                 }
-                log.info("Dispositivo fechado com sucesso");
+                log.info("Device closed successfully");
                 return true;
             }
             return false;
         } catch (Exception e) {
-            log.error("Erro ao fechar dispositivo", e);
+            log.error("Error closing device", e);
             return false;
         }
     }
 
     /**
-     * Configura tipo de dedo (seco/normal/úmido)
+     * Configure finger type (dry/normal/wet)
      */
     public boolean setFingerType(String type) {
         if (!isDeviceOpen.get()) return false;
@@ -108,11 +107,11 @@ public class FingerprintScannerService {
     }
 
     /**
-     * Captura uma imagem raw do dispositivo
+     * Captures a raw image of the device.
      */
     public byte[] captureRawImage(int width, int height) {
         if (!isDeviceOpen.get()) {
-            throw new IllegalStateException("Dispositivo não está aberto");
+            throw new IllegalStateException("Device is not open");
         }
 
         // Define a janela de captura (área do sensor)
@@ -122,45 +121,45 @@ public class FingerprintScannerService {
         int result = liveScan.LIVESCAN_GetFPRawData(0, rawData);
 
         if (result != 1) {
-            log.error("Falha ao capturar imagem. Código: {}", result);
-            throw new RuntimeException("Falha ao capturar imagem: código " + result);
+            log.error("Failed to capture image. Code: {}", result);
+            throw new RuntimeException("Failed to capture image: code " + result);
         }
 
-        log.debug("Imagem capturada com sucesso: {}x{}", width, height);
+        log.debug("Image captured successfully: {}x{}", width, height);
         return rawData;
     }
 
     /**
-     * Verifica se há dedo na imagem
+     * Check if there is a finger in the image
      */
     public boolean isFinger(byte[] imageData, int width, int height) {
         return mosaic.MOSAIC_IsFinger(imageData, width, height) > 0;
     }
 
     /**
-     * Separa múltiplos dedos em uma imagem
+     * Separate multiple fingers in an image.
      */
     public List<FingerSplitResult> splitFingers(byte[] imageData, int width, int height) {
         fpSplit.FPSPLIT_Init(width, height, 1);
 
         IntByReference fingerNum = new IntByReference(0);
 
-        // Calcula o tamanho da estrutura
+        // Calculate the size of the structure.
         FpSplit.FPSPLIT_INFO template = new FpSplit.FPSPLIT_INFO();
         int structSize = template.size();
 
-        // Aloca memória para array de 10 estruturas
+        // Allocates memory for an array of 10 structures.
         Pointer infoArrayPtr = new Memory(structSize * 10);
 
-        // Aloca buffers individuais para cada dedo e configura os ponteiros
+        // Allocates individual buffers for each finger and configures the pointers
         Pointer[] fingerBuffers = new Pointer[10];
         for (int i = 0; i < 10; i++) {
             fingerBuffers[i] = new Memory(SINGLE_WIDTH * SINGLE_HEIGHT);
-            // Escreve o ponteiro do buffer no offset correto (24 bytes após o início de cada estrutura)
+            // Writes the buffer pointer to the correct offset (24 bytes after the start of each structure)
             infoArrayPtr.setPointer(i * structSize + 24, fingerBuffers[i]);
         }
 
-        // Executa a separação
+        // Perform separation
         int result = fpSplit.FPSPLIT_DoSplit(
                 imageData, width, height, 1,
                 SINGLE_WIDTH, SINGLE_HEIGHT,
@@ -170,17 +169,17 @@ public class FingerprintScannerService {
         List<FingerSplitResult> fingers = new ArrayList<>();
         int count = fingerNum.getValue();
 
-        log.debug("Separação de dedos: resultado={}, quantidade={}", result, count);
+        log.debug("Finger separation: result={}, quantity={}", result, count);
 
         // Lê as informações de cada dedo detectado
         for (int i = 0; i < count && i < 10; i++) {
-            // Cria estrutura apontando para o offset correto
+            // Creates a structure pointing to the correct offset.
             FpSplit.FPSPLIT_INFO info = new FpSplit.FPSPLIT_INFO(
                     infoArrayPtr.share(i * structSize)
             );
             info.read();
 
-            // Lê os dados da imagem
+            // Read the image data.
             byte[] fingerData = info.getImageData(SINGLE_WIDTH, SINGLE_HEIGHT);
 
             FingerSplitResult finger = new FingerSplitResult();
@@ -199,10 +198,10 @@ public class FingerprintScannerService {
             log.debug("Dedo {}: x={}, y={}, angle={}, quality={}", i, info.x, info.y, info.angle, info.quality);
         }
 
-        // Libera memória
+        // Frees up memory
         for (Pointer buffer : fingerBuffers) {
             if (buffer instanceof Memory) {
-                // Memory é garbage collected, mas podemos liberar explicitamente
+                // Memory is garbage collected, but we can explicitly free it.
                 ((Memory) buffer).clear();
             }
         }
@@ -212,16 +211,16 @@ public class FingerprintScannerService {
     }
 
     /**
-     * Converte imagem raw para BMP com cabeçalho
+     * Converts raw image to BMP with header.
      */
     public byte[] rawToBmp(byte[] rawData, int width, int height) {
         byte[] bmpData = new byte[1078 + width * height];
 
-        // Cabeçalho BMP
+        // BMP header
         byte[] header = createBmpHeader(width, height);
         System.arraycopy(header, 0, bmpData, 0, 1078);
 
-        // Espelha verticalmente (BMP é bottom-up)
+        // Mirror vertically (BMP is bottom-up)
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 bmpData[1078 + y * width + x] =
@@ -233,56 +232,56 @@ public class FingerprintScannerService {
     }
 
     /**
-     * Converte BMP para Base64 para envio ao frontend
+     * Converts BMP to Base64 for sending to the frontend.
      */
     public String bmpToBase64(byte[] bmpData) {
         return "data:image/bmp;base64," + Base64.getEncoder().encodeToString(bmpData);
     }
 
     /**
-     * Cria template ISO da impressão digital
+     * Creates an ISO template for digital printing.
      */
     public byte[] createISOTemplate(byte[] imageData) {
         if (fpDevice == 0) {
             fpDevice = fpStdLib.ZAZ_FpStdLib_OpenDevice();
             if (fpDevice == 0) {
-                throw new RuntimeException("Falha ao inicializar algoritmo biométrico");
+                throw new RuntimeException("Failed to initialize biometric algorithm.");
             }
         }
 
-        // Espelha horizontalmente a imagem (para compatibilidade)
+        // Mirror the image horizontally (for compatibility).
         horizontalMirror(imageData, SINGLE_WIDTH, SINGLE_HEIGHT);
 
         byte[] template = new byte[1024];
         int result = fpStdLib.ZAZ_FpStdLib_CreateISOTemplate(fpDevice, imageData, template);
 
         if (result == 0) {
-            throw new RuntimeException("Falha ao criar template ISO");
+            throw new RuntimeException("Failed to create ISO template.");
         }
 
         return template;
     }
 
     /**
-     * Compara dois templates biométricos
+     * Compare two biometric templates.
      */
     public int compareTemplates(byte[] template1, byte[] template2) {
         if (fpDevice == 0) {
-            throw new IllegalStateException("Dispositivo biométrico não inicializado");
+            throw new IllegalStateException("Biometric device not initialized");
         }
 
         return fpStdLib.ZAZ_FpStdLib_CompareTemplates(fpDevice, template1, template2);
     }
 
     /**
-     * Detecta impressão digital falsa (fake)
+     * Detects fake fingerprints.
      */
     public int detectFake(byte[] imageData, int width, int height) {
         return fione.GetFingerFake(imageData, width, height);
     }
 
     /**
-     * Emite beep do dispositivo
+     * The device beeps.
      */
     public void beep(int times) {
         if (isDeviceOpen.get()) {
@@ -291,39 +290,38 @@ public class FingerprintScannerService {
     }
 
     /**
-     * Para captura contínua
+     * For continuous capture
      */
     public void stopCapture() {
         isCapturing.set(false);
     }
 
-    // ========== Métodos auxiliares ==========
 
     private byte[] createBmpHeader(int width, int height) {
         byte[] header = new byte[1078];
 
-        // Cabeçalho BMP padrão
+        // Basic BMP headers
         byte[] bmpHeader = {
                 0x42, 0x4d, // BM
-                0x0, 0x0, 0x0, 0x00, // tamanho do arquivo
-                0x00, 0x00, 0x00, 0x00, // reservado
-                0x36, 0x4, 0x00, 0x00, // offset dos dados
-                0x28, 0x00, 0x00, 0x00, // tamanho do info header
-                0x00, 0x00, 0x0, 0x00, // largura
-                0x00, 0x00, 0x00, 0x00, // altura
-                0x01, 0x00, // planos
-                0x08, 0x00, // bits por pixel
-                0x00, 0x00, 0x00, 0x00, // compressão
-                0x00, 0x00, 0x00, 0x00, // tamanho da imagem
-                0x00, 0x00, 0x00, 0x00, // dpi x
-                0x00, 0x00, 0x00, 0x00, // dpi y
-                0x00, 0x00, 0x00, 0x00, // cores usadas
-                0x00, 0x00, 0x00, 0x00  // cores importantes
+                0x0, 0x0, 0x0, 0x00, // file size
+                0x00, 0x00, 0x00, 0x00, // reserved
+                0x36, 0x4, 0x00, 0x00, // data offset
+                0x28, 0x00, 0x00, 0x00, // info header size
+                0x00, 0x00, 0x0, 0x00, // width
+                0x00, 0x00, 0x00, 0x00, // height
+                0x01, 0x00, // plans
+                0x08, 0x00, // bits per pixels
+                0x00, 0x00, 0x00, 0x00, // compression
+                0x00, 0x00, 0x00, 0x00, // image size
+                0x00, 0x00, 0x00, 0x00, // x dpi
+                0x00, 0x00, 0x00, 0x00, // y dpi
+                0x00, 0x00, 0x00, 0x00, // used colors
+                0x00, 0x00, 0x00, 0x00  // important colors
         };
 
         System.arraycopy(bmpHeader, 0, header, 0, bmpHeader.length);
 
-        // Define largura e altura
+        // Define width and height
         header[18] = (byte)(width & 0xFF);
         header[19] = (byte)((width >> 8) & 0xFF);
         header[20] = (byte)((width >> 16) & 0xFF);
@@ -334,7 +332,7 @@ public class FingerprintScannerService {
         header[24] = (byte)((height >> 16) & 0xFF);
         header[25] = (byte)((height >> 24) & 0xFF);
 
-        // Paleta de cores (escala de cinza)
+        // Color palette (grayscale)
         for (int i = 54, j = 0; i < 1078; i += 4, j++) {
             header[i] = header[i + 1] = header[i + 2] = (byte)j;
             header[i + 3] = 0;
@@ -355,7 +353,6 @@ public class FingerprintScannerService {
         return isDeviceOpen.get();
     }
 
-    // ========== Classes auxiliares ==========
 
     public static class FingerSplitResult {
         private byte[] imageData;
@@ -368,7 +365,7 @@ public class FingerprintScannerService {
         private int angle;
         private int quality;
 
-        // Getters e Setters
+        // Getters and Setters
         public byte[] getImageData() { return imageData; }
         public void setImageData(byte[] imageData) { this.imageData = imageData; }
         public int getWidth() { return width; }
